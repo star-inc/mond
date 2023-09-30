@@ -1,0 +1,23 @@
+{
+  "name": "ninja",
+  "version": "1.0.0",
+  "description": "HTTP Reverse Proxy by WebSocket.",
+  "main": "app.js",
+  "scripts": {
+    "plant": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/star-inc/ninja.git"
+  },
+  "author": "Star Inc.",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/star-inc/ninja/issues"
+  },
+  "homepage": "https://github.com/star-inc/ninja#readme",
+  "dependencies": {
+    "yaml": "^2.3.2"
+  }
+}
