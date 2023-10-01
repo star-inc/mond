@@ -1,8 +1,16 @@
-import WebSocket from 'ws';
-import {loadConfig, useConfig} from './src/config.mjs';
-import { onError, onMessage, onPing } from './src/handlers.mjs';
+import "./src/config/load.mjs";
 
-loadConfig();
+import WebSocket from 'ws';
+
+import {
+  useConfig
+} from './src/config/index.mjs';
+
+import {
+  onError,
+  onMessage,
+  onPing
+} from './src/transfer/handlers.mjs';
 
 const {
   entrypoint_url: entrypointUrl,

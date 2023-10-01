@@ -5,6 +5,7 @@ import {
 } from "./bottle.mjs"
 
 export function onPing() {
+    this.pong();
 }
 
 export function onMessage(buffer) {
@@ -32,5 +33,6 @@ export function onMessage(buffer) {
     }
 }
 
-export function onError() {
+export function onError(e) {
+    console.log(e);
 }

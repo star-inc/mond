@@ -9,7 +9,7 @@ let clientConfig = {};
 export const loadConfig = () => {
     const {
         pathname: configFilename
-    } = new URL('../config.toml', import.meta.url);
+    } = new URL('../../config.toml', import.meta.url);
 
     if (!existsSync(configFilename)) {
         throw Error("config.toml not exists");

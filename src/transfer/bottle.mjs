@@ -2,11 +2,11 @@ import got from 'got';
 
 import {
     useSendMessage
-} from './utils.mjs';
+} from '../utils.mjs';
 
 import {
     useConfig
-} from './config.mjs';
+} from '../config/index.mjs';
 
 const registry = new Map();
 
@@ -22,7 +22,8 @@ export function register(ws, data) {
     const urlParsed = new URL(url);
     const originalHost = urlParsed.host;
 
-    const proxyServer = config.servers[originalHost];
+    const proxyServer = config.servers.
+        find((i) => i.hosts.includes(originalHost));
     if (!proxyServer) {
         sendMessage({
             requestId,
@@ -31,8 +32,8 @@ export function register(ws, data) {
         return;
     }
 
-    urlParsed.host = proxyServer.host;
-    urlParsed.port = proxyServer.port;
+    urlParsed.host = proxyServer.real_host;
+    urlParsed.port = proxyServer.real_port;
 
     const proxyHeaders = {
         headers,

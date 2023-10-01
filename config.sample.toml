@@ -1,7 +1,9 @@
-entrypoint_url = "ws://localhost:8080/entrypoint"
+entrypoint_url = "ws://127.0.0.1:8080/entrypoint"
 entrypoint_key = "entrypoint_example_key"
 
-[servers."example.com"]
-schemes = [ "http", "https" ]
-host = "127.0.0.1"
-port = 8080
+[[servers]]
+hosts = [ "example.com", "www.example.com" ]
+real_host = "127.0.0.1"
+real_port = 8000
+secure = false
+allow_ws = false
