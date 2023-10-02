@@ -34,5 +34,5 @@ export function onMessage(buffer) {
 }
 
 export function onError(e) {
-    console.log(e);
+    console.error(e);
 }

@@ -1,8 +1,14 @@
 "use strict";
 
 // Import modules
-import { existsSync, readFileSync } from "node:fs";
-import { parse as parseTOML } from "toml";
+import {
+    existsSync,
+    readFileSync,
+} from "node:fs";
+
+import {
+    parse as parseTOML,
+} from "toml";
 
 let clientConfig = {};
 

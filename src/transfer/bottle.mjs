@@ -16,24 +16,25 @@ export function register(ws, data) {
         throw new Error("Incorrect register information");
     }
 
-    const config = useConfig();
+    const { nodes } = useConfig();
     const sendMessage = useSendMessage(ws);
 
     const urlParsed = new URL(url);
     const originalHost = urlParsed.host;
 
-    const proxyServer = config.servers.
-        find((i) => i.hosts.includes(originalHost));
-    if (!proxyServer) {
+    const profile = nodes.find((i) => i.hosts.includes(originalHost));
+
+    if (!profile) {
         sendMessage({
             requestId,
-            type: 'finish',
+            type: 'exception',
+            text: 'profile not exists'
         })
         return;
     }
 
-    urlParsed.host = proxyServer.real_host;
-    urlParsed.port = proxyServer.real_port;
+    urlParsed.host = profile.real_host;
+    urlParsed.port = profile.real_port;
 
     const proxyHeaders = {
         headers,
@@ -42,15 +43,32 @@ export function register(ws, data) {
     const proxyOptions = {
         method: method,
         headers: proxyHeaders,
+        throwHttpErrors: false,
     }
 
     const stream = got.stream(urlParsed, proxyOptions);
+    stream.on("response", (res) => {
+        const { statusCode, headers } = res;
+        sendMessage({
+            requestId,
+            type: 'head',
+            statusCode,
+            headers,
+        });
+    })
     stream.on("data", (chunk) => {
         sendMessage({
             requestId,
             type: 'passthrough',
             chunk: chunk.toString('base64'),
         });
+    })
+    stream.on('error', (e) => {
+        sendMessage({
+            requestId,
+            type: 'exception',
+            text: e.message
+        })
     })
     stream.on('end', () => {
         sendMessage({

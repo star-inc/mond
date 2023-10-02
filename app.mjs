@@ -13,13 +13,12 @@ import {
 } from './src/transfer/handlers.mjs';
 
 const {
-  entrypoint_url: entrypointUrl,
-  entrypoint_key: entrypointKey
+  entrypoint
 } = useConfig();
 
-const ws = new WebSocket(entrypointUrl, {
+const ws = new WebSocket(entrypoint.url, {
   headers: {
-    "x-inaba-key": entrypointKey
+    "x-inaba-key": entrypoint.key
   }
 });
 
