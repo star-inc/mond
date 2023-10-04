@@ -1,5 +1,5 @@
 {
-  "name": "ninja",
+  "name": "mond",
   "version": "1.0.0",
   "description": "HTTP Reverse Proxy by WebSocket.",
   "main": "app.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/star-inc/ninja.git"
+    "url": "git+https://github.com/star-inc/mond.git"
   },
   "author": "Star Inc.",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/star-inc/ninja/issues"
+    "url": "https://github.com/star-inc/mond/issues"
   },
-  "homepage": "https://github.com/star-inc/ninja#readme",
+  "homepage": "https://github.com/star-inc/mond#readme",
   "dependencies": {
     "got": "^13.0.0",
     "toml": "^3.0.0",
