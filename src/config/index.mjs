@@ -1,6 +1,3 @@
-"use strict";
-
-// Import modules
 import {
     existsSync,
     readFileSync,

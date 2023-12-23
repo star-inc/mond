@@ -22,7 +22,7 @@ export function register(ws, data) {
     const urlParsed = new URL(url);
     const originalHost = urlParsed.host;
 
-    const profile = nodes.find((i) => i.hosts.includes(originalHost));
+    const profile = nodes[originalHost];
 
     if (!profile) {
         sendMessage({
@@ -33,6 +33,7 @@ export function register(ws, data) {
         return;
     }
 
+    urlParsed.protocol = profile.is_secure ? "https:" : "http:";
     urlParsed.host = profile.real_host;
     urlParsed.port = profile.real_port;
 
