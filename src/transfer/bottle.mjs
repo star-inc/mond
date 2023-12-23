@@ -16,15 +16,15 @@ export function register(ws, data) {
         throw new Error("Incorrect register information");
     }
 
-    const { nodes } = useConfig();
+    const { node } = useConfig();
     const sendMessage = useSendMessage(ws);
 
     const urlParsed = new URL(url);
-    const originalHost = urlParsed.host;
 
-    const profile = nodes[originalHost];
+    const serverName = urlParsed.host;
+    const serverProfile = node[serverName];
 
-    if (!profile) {
+    if (!serverProfile) {
         sendMessage({
             requestId,
             type: 'exception',
@@ -33,13 +33,13 @@ export function register(ws, data) {
         return;
     }
 
-    urlParsed.protocol = profile.is_secure ? "https:" : "http:";
-    urlParsed.host = profile.real_host;
-    urlParsed.port = profile.real_port;
+    urlParsed.protocol = serverProfile.is_secure ? "https:" : "http:";
+    urlParsed.host = serverProfile.real_host;
+    urlParsed.port = serverProfile.real_port;
 
     const proxyHeaders = {
         headers,
-        Host: originalHost,
+        Host: serverName,
     };
     const proxyOptions = {
         method: method,

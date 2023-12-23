@@ -2,8 +2,7 @@
 url = "ws://localhost/entrypoint"
 key = "entrypoint_example_key_001"
 
-[nodes."example.com"]
+[node."example.com"]
 real_host = "127.0.0.1"
 real_port = 8000
 is_secure = false
-is_allow_ws = false
