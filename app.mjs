@@ -28,5 +28,5 @@ ws.on('ping', onPing);
 ws.on('message', onMessage);
 ws.on('error', onError);
 
-console.info("Ninja - The tunnel agent of HTTP services.")
+console.info("Mond - The tunnel agent of HTTP services.")
 console.info(`Connecting to Inaba server on \"${entrypoint.url}\"`)
