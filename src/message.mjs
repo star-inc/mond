@@ -40,9 +40,16 @@ export function httpRequestHead(data) {
         return;
     }
 
-    urlParsed.protocol = serverProfile.is_secure ? "https:" : "http:";
-    urlParsed.host = serverProfile.real_host;
-    urlParsed.port = serverProfile.real_port;
+    const {
+        real_host: realHost,
+        real_port: realPort,
+        is_secure_enabled: isSecureEnabled,
+        is_secure_unsafe: isSecureUnsafe,
+    } = serverProfile;
+
+    urlParsed.protocol = isSecureEnabled ? "https:" : "http:";
+    urlParsed.host = realHost;
+    urlParsed.port = realPort;
 
     const proxyHeaders = {
         ...headers,
@@ -52,6 +59,9 @@ export function httpRequestHead(data) {
         method: method,
         headers: proxyHeaders,
         throwHttpErrors: false,
+        https: {
+            rejectUnauthorized: !isSecureUnsafe
+        }
     }
 
     const stream = got.stream(urlParsed, proxyOptions);
