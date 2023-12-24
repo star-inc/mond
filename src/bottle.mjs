@@ -2,11 +2,11 @@ import got from 'got';
 
 import {
     useSendMessage
-} from '../utils.mjs';
+} from './utils.mjs';
 
 import {
     useConfig
-} from '../config/index.mjs';
+} from './config/index.mjs';
 
 const registry = new Map();
 

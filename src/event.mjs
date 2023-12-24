@@ -4,6 +4,10 @@ import {
     finish,
 } from "./bottle.mjs"
 
+export function onOpen() {
+    console.info("Connected.");
+}
+
 export function onPing() {
     this.pong();
 }
