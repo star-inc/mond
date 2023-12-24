@@ -93,6 +93,11 @@ export function passthrough(data) {
     stream.write(buffer);
 }
 
+export function exception(data) {
+    const { type, text } = data;
+    console.warn(`Server Exception: ${text}`)
+}
+
 export function finish(data) {
     const { requestId } = data;
     if (!registry.has(requestId)) {

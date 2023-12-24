@@ -1,8 +1,9 @@
 import {
     register,
     passthrough,
+    exception,
     finish,
-} from "./bottle.mjs"
+} from "./message.mjs"
 
 export function onOpen() {
     console.info("Connected.");
@@ -25,6 +26,10 @@ export function onMessage(buffer) {
         }
         case "passthrough": {
             passthrough(data);
+            break;
+        }
+        case "exception": {
+            exception(data);
             break;
         }
         case "finish": {
