@@ -1,9 +1,10 @@
 import {
-    register,
-    passthrough,
-    exception,
-    finish,
-} from "./message.mjs"
+    methods as messageMethods,
+} from "./message.mjs";
+
+import {
+    isObjectPropExists,
+} from "./utils.mjs";
 
 export function onOpen() {
     console.info("Connected.");
@@ -18,27 +19,11 @@ export function onMessage(buffer) {
     const data = JSON.parse(text);
 
     const { type } = data;
-
-    switch (type) {
-        case "register": {
-            register(this, data);
-            break;
-        }
-        case "passthrough": {
-            passthrough(data);
-            break;
-        }
-        case "exception": {
-            exception(data);
-            break;
-        }
-        case "finish": {
-            finish(data);
-            break;
-        }
-        default: {
-            this.send(`Unsupported type: ${type}`)
-        }
+    if (isObjectPropExists(messageMethods, type)) {
+        const method = messageMethods[type];
+        method.call(this, data);
+    } else {
+        console.warn(`Unsupported message type: ${type}`)
     }
 }
 

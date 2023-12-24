@@ -8,16 +8,23 @@ import {
     useConfig
 } from './config/index.mjs';
 
-const registry = new Map();
+const requestPool = new Map();
 
-export function register(ws, data) {
+export const methods = {
+    httpRequestHead,
+    httpRequestBody,
+    httpRequestFoot,
+    exception,
+}
+
+export function httpRequestHead(data) {
     const { requestId, url, method, headers } = data;
     if (!(requestId && url && method && headers)) {
         throw new Error("Incorrect register information");
     }
 
     const { node } = useConfig();
-    const sendMessage = useSendMessage(ws);
+    const sendMessage = useSendMessage(this);
 
     const urlParsed = new URL(url);
 
@@ -39,7 +46,7 @@ export function register(ws, data) {
 
     const proxyHeaders = {
         headers,
-        Host: serverName,
+        host: serverName,
     };
     const proxyOptions = {
         method: method,
@@ -51,19 +58,26 @@ export function register(ws, data) {
     stream.on("response", (res) => {
         const { statusCode, headers } = res;
         sendMessage({
+            type: 'httpResponseHead',
             requestId,
-            type: 'head',
             statusCode,
             headers,
         });
     })
     stream.on("data", (chunk) => {
         sendMessage({
+            type: 'httpResponseBody',
             requestId,
-            type: 'passthrough',
             chunk: chunk.toString('base64'),
         });
     })
+    stream.on('end', () => {
+        sendMessage({
+            type: 'httpResponseFoot',
+            requestId,
+        });
+        stream.destroy();
+    });
     stream.on('error', (e) => {
         sendMessage({
             requestId,
@@ -71,39 +85,32 @@ export function register(ws, data) {
             text: e.message
         })
     })
-    stream.on('end', () => {
-        sendMessage({
-            requestId,
-            type: 'finish',
-        });
-        stream.destroy();
-    });
 
-    registry.set(requestId, stream);
+    requestPool.set(requestId, stream);
 }
 
-export function passthrough(data) {
+export function httpRequestBody(data) {
     const { requestId, chunk } = data;
-    if (!registry.has(requestId)) {
+    if (!requestPool.has(requestId)) {
         throw new Error("Request not exists");
     }
 
-    const stream = registry.get(requestId);
+    const stream = requestPool.get(requestId);
     const buffer = Buffer.from(chunk, "base64");
     stream.write(buffer);
+}
+
+export function httpRequestFoot(data) {
+    const { requestId } = data;
+    if (!requestPool.has(requestId)) {
+        throw new Error("Request not exists");
+    }
+
+    const stream = requestPool.get(requestId);
+    stream.end();
 }
 
 export function exception(data) {
     const { type, text } = data;
     console.warn(`Server Exception: ${text}`)
-}
-
-export function finish(data) {
-    const { requestId } = data;
-    if (!registry.has(requestId)) {
-        throw new Error("Request not exists");
-    }
-
-    const stream = registry.get(requestId);
-    stream.end();
 }
