@@ -45,7 +45,7 @@ export function httpRequestHead(data) {
     urlParsed.port = serverProfile.real_port;
 
     const proxyHeaders = {
-        headers,
+        ...headers,
         host: serverName,
     };
     const proxyOptions = {
@@ -80,8 +80,8 @@ export function httpRequestHead(data) {
     });
     stream.on('error', (e) => {
         sendMessage({
-            requestId,
             type: 'exception',
+            requestId,
             text: e.message
         })
     })
@@ -96,8 +96,7 @@ export function httpRequestBody(data) {
     }
 
     const stream = requestPool.get(requestId);
-    const buffer = Buffer.from(chunk, "base64");
-    stream.write(buffer);
+    stream.write(chunk, "base64");
 }
 
 export function httpRequestFoot(data) {
