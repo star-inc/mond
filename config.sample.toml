@@ -1,6 +1,6 @@
 [entrypoint]
-url = "ws://localhost/entrypoint"
-key = "entrypoint_example_key_001"
+host = "ws://localhost"
+token = "entrypoint_example_token_001"
 
 [node."example.com"]
 real_host = "127.0.0.1"

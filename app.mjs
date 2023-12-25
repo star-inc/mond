@@ -11,15 +11,21 @@ import {
   onPing,
   onMessage,
   onError,
-} from './src/event.mjs';
+} from './src/events.mjs';
 
 const {
   entrypoint
 } = useConfig();
 
-const ws = new WebSocket(entrypoint.url, {
+const {
+  host: inabaHost,
+  token: inabaToken,
+} = entrypoint;
+
+const exchangerUrl = `${inabaHost}/exchanger`
+const ws = new WebSocket(exchangerUrl, {
   headers: {
-    "x-inaba-key": entrypoint.key
+    "x-inaba-token": inabaToken,
   }
 });
 
@@ -29,4 +35,4 @@ ws.on('message', onMessage);
 ws.on('error', onError);
 
 console.info("Mond - The tunnel agent of HTTP services.")
-console.info(`Connecting to Inaba server on \"${entrypoint.url}\"`)
+console.info(`Connecting to Inaba server on \"${exchangerUrl}\"`)
