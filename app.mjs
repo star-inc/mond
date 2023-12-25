@@ -18,7 +18,7 @@ const {
 } = useConfig();
 
 const {
-  host: inabaHost,
+  host_ws: inabaHost,
   token: inabaToken,
 } = entrypoint;
 

@@ -1,5 +1,6 @@
 [entrypoint]
-host = "ws://localhost"
+host_http = "http://localhost"
+host_ws = "ws://localhost"
 token = "entrypoint_example_token_001"
 
 [node."example.com"]
