@@ -1,6 +1,10 @@
 import got from 'got';
 
 import {
+    WebSocket,
+} from "ws";
+
+import {
     useSendMessage
 } from './utils.mjs';
 
@@ -14,6 +18,10 @@ export const methods = {
     httpRequestHead,
     httpRequestBody,
     httpRequestFoot,
+    websocketOpen,
+    websocketPong,
+    websocketSend,
+    websocketClose,
     exception,
 }
 
@@ -34,7 +42,7 @@ export function httpRequestHead(data) {
     if (!serverProfile) {
         sendMessage({
             requestId,
-            type: 'exception',
+            type: 'httpException',
             text: 'profile not exists'
         })
         return;
@@ -65,6 +73,9 @@ export function httpRequestHead(data) {
     }
 
     const stream = got.stream(urlParsed, proxyOptions);
+    stream.on("request", () => {
+        requestPool.set(requestId, stream);
+    })
     stream.on("response", (res) => {
         const { statusCode, headers } = res;
         sendMessage({
@@ -86,17 +97,18 @@ export function httpRequestHead(data) {
             type: 'httpResponseFoot',
             requestId,
         });
-        stream.destroy();
     });
     stream.on('error', (e) => {
         sendMessage({
-            type: 'exception',
+            type: 'httpResponseException',
             requestId,
-            text: e.message
+            text: e.message || e.code
         })
     })
-
-    requestPool.set(requestId, stream);
+    stream.on('close', () => {
+        stream.destroy();
+        requestPool.delete(requestId);
+    })
 }
 
 export function httpRequestBody(data) {
@@ -119,7 +131,97 @@ export function httpRequestFoot(data) {
     stream.end();
 }
 
+export function websocketOpen(data) {
+    const { requestId, url, headers } = data;
+
+    const { node } = useConfig();
+    const sendMessage = useSendMessage(this);
+
+    const urlParsed = new URL(url);
+    const protocols = headers["sec-webSocket-protocol"];
+
+    const serverName = urlParsed.host;
+    const serverProfile = node[serverName];
+
+    const {
+        real_host: realHost,
+        real_port: realPort,
+        is_secure_enabled: isSecureEnabled,
+        is_secure_unsafe: isSecureUnsafe,
+    } = serverProfile;
+
+    if (!serverProfile) {
+        sendMessage({
+            requestId,
+            type: 'httpException',
+            text: 'profile not exists'
+        })
+        return;
+    }
+
+    urlParsed.protocol = isSecureEnabled ? "wss:" : "ws:";
+    urlParsed.host = realHost;
+    urlParsed.port = realPort;
+
+    const ws = new WebSocket(urlParsed, protocols, {
+        rejectUnauthorized: !isSecureUnsafe,
+        headers,
+    });
+    ws.on('open', () => {
+        requestPool.set(requestId, ws);
+    })
+    ws.on('ping', () => {
+        sendMessage( {
+            type: "websocketPing",
+            requestId,
+        });
+    })
+    ws.on('message', (data, isBinary) => {
+        sendMessage( {
+            type: "websocketSend",
+            requestId,
+            chunk: data.toString("base64"),
+            isBinary,
+        });
+    })
+    ws.on('error', (e) => {
+        sendMessage({
+            type: 'websocketException',
+            requestId,
+            text: e.message
+        })
+    });
+    ws.on('close', () => {
+        sendMessage( {
+            type: "websocketClose",
+            requestId,
+        });
+        requestPool.delete(requestId);
+    })
+}
+
+export function websocketPong(data) {
+    const { requestId } = data;
+    const ws = requestPool.get(requestId);
+    ws.pong();
+}
+
+export function websocketSend(data) {
+    const { requestId, chunk, isBinary } = data;
+    const ws = requestPool.get(requestId);
+    const buffer = Buffer.from(chunk, "base64");
+    ws.send(buffer, {binary: isBinary});
+}
+
+export function websocketClose(data) {
+    const { requestId } = data;
+    const ws = requestPool.get(requestId);
+    if (ws) {
+        ws.close();
+    }
+}
+
 export function exception(data) {
-    const { type, text } = data;
+    const { text } = data;
     console.warn(`Server Exception: ${text}`)
 }
