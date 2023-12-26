@@ -22,8 +22,8 @@ const {
   token: inabaToken,
 } = entrypoint;
 
-const exchangerUrl = `${inabaHost}/exchanger`
-const ws = new WebSocket(exchangerUrl, {
+const bottleUrl = `${inabaHost}/bottle`
+const ws = new WebSocket(bottleUrl, {
   headers: {
     "x-inaba-token": inabaToken,
   }
@@ -35,4 +35,4 @@ ws.on('message', onMessage);
 ws.on('error', onError);
 
 console.info("Mond - The tunnel agent of HTTP services.")
-console.info(`Connecting to Inaba server on \"${exchangerUrl}\"`)
+console.info(`Connecting to Inaba server on \"${bottleUrl}\"`)
