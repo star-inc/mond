@@ -1,4 +1,3 @@
-import { join as pathJoin } from 'node:path';
 import WebSocket from 'ws';
 
 import {
@@ -17,7 +16,7 @@ export function getBottleConfig() {
     const { entrypoint } = useConfig();
 
     const { host_ws: inabaHost, token: inabaToken, } = entrypoint;
-    const bottleUrl = pathJoin(inabaHost, "bottle");
+    const bottleUrl = [inabaHost, "bottle"].join("/");
 
     return { bottleUrl, inabaToken }
 }
@@ -65,5 +64,5 @@ function onError(e) {
 
 function onClose() {
     console.warn("Session has been closed, try to reconnect later.");
-    setTimeout(connect, 15000);
+    setTimeout(connect, 7000);
 }

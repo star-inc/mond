@@ -170,10 +170,10 @@ export function websocketOpen(data) {
     ws.on('open', () => {
         requestPool.set(requestId, ws);
     })
-    ws.on('ping', () => {
+    ws.on('ping', (chunk) => {
         sendMessage( {
             type: "websocketPing",
-            requestId,
+            requestId, chunk
         });
     })
     ws.on('message', (data, isBinary) => {
@@ -201,9 +201,9 @@ export function websocketOpen(data) {
 }
 
 export function websocketPong(data) {
-    const { requestId } = data;
+    const { requestId, chunk } = data;
     const ws = requestPool.get(requestId);
-    ws.pong();
+    ws.pong(chunk);
 }
 
 export function websocketSend(data) {
