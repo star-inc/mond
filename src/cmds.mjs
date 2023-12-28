@@ -69,12 +69,10 @@ export function httpRequestHead(data) {
         method: method,
         headers: proxyHeaders,
         throwHttpErrors: false,
+        timeout: timeoutRequest,
         https: {
             rejectUnauthorized: !isSecureUnsafe
         },
-        timeout: {
-            request: timeoutRequest,
-        }
     }
 
     const stream = got.stream(urlParsed, proxyOptions);
