@@ -8,3 +8,4 @@ real_host = "127.0.0.1"
 real_port = 8000
 is_secure_enabled = false
 is_secure_unsafe = false
+timeout_request = 3000

@@ -12,7 +12,7 @@ import {
     useConfig
 } from './config/index.mjs';
 
-const requestPool = new Map();
+const agentPool = new Map();
 
 export const methods = {
     httpRequestHead,
@@ -53,6 +53,7 @@ export function httpRequestHead(data) {
         real_port: realPort,
         is_secure_enabled: isSecureEnabled,
         is_secure_unsafe: isSecureUnsafe,
+        timeout_request: timeoutRequest
     } = serverProfile;
 
     urlParsed.protocol = isSecureEnabled ? "https:" : "http:";
@@ -69,12 +70,15 @@ export function httpRequestHead(data) {
         throwHttpErrors: false,
         https: {
             rejectUnauthorized: !isSecureUnsafe
+        },
+        timeout: {
+            request: timeoutRequest,
         }
     }
 
     const stream = got.stream(urlParsed, proxyOptions);
     stream.on("request", () => {
-        requestPool.set(requestId, stream);
+        agentPool.set(requestId, stream);
     })
     stream.on("response", (res) => {
         const { statusCode, headers } = res;
@@ -107,28 +111,38 @@ export function httpRequestHead(data) {
     })
     stream.on('close', () => {
         stream.destroy();
-        requestPool.delete(requestId);
+        agentPool.delete(requestId);
     })
 }
 
 export function httpRequestBody(data) {
     const { requestId, chunk } = data;
-    if (!requestPool.has(requestId)) {
+    if (!agentPool.has(requestId)) {
         throw new Error("Request not exists");
     }
 
-    const stream = requestPool.get(requestId);
+    const stream = agentPool.get(requestId);
     stream.write(chunk, "base64");
 }
 
 export function httpRequestFoot(data) {
     const { requestId } = data;
-    if (!requestPool.has(requestId)) {
+    if (!agentPool.has(requestId)) {
         throw new Error("Request not exists");
     }
 
-    const stream = requestPool.get(requestId);
+    const stream = agentPool.get(requestId);
     stream.end();
+}
+
+export function httpRequestAbort(data) {
+    const { requestId } = data;
+    if (!agentPool.has(requestId)) {
+        throw new Error("Request not exists");
+    }
+
+    const stream = agentPool.get(requestId);
+    stream.cancel();
 }
 
 export function websocketOpen(data) {
@@ -168,7 +182,7 @@ export function websocketOpen(data) {
         headers,
     });
     ws.on('open', () => {
-        requestPool.set(requestId, ws);
+        agentPool.set(requestId, ws);
     })
     ws.on('ping', (chunk) => {
         sendMessage( {
@@ -196,26 +210,38 @@ export function websocketOpen(data) {
             type: "websocketClose",
             requestId,
         });
-        requestPool.delete(requestId);
+        agentPool.delete(requestId);
     })
 }
 
 export function websocketPong(data) {
     const { requestId, chunk } = data;
-    const ws = requestPool.get(requestId);
+    if (!agentPool.has(requestId)) {
+        throw new Error("Socket not exists");
+    }
+
+    const ws = agentPool.get(requestId);
     ws.pong(chunk);
 }
 
 export function websocketSend(data) {
     const { requestId, chunk, isBinary } = data;
-    const ws = requestPool.get(requestId);
+    if (!agentPool.has(requestId)) {
+        throw new Error("Socket not exists");
+    }
+
+    const ws = agentPool.get(requestId);
     const buffer = Buffer.from(chunk, "base64");
     ws.send(buffer, {binary: isBinary});
 }
 
 export function websocketClose(data) {
     const { requestId } = data;
-    const ws = requestPool.get(requestId);
+    if (!agentPool.has(requestId)) {
+        throw new Error("Socket not exists");
+    }
+
+    const ws = agentPool.get(requestId);
     if (ws) {
         ws.close();
     }
