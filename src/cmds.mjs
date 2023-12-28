@@ -18,6 +18,7 @@ export const methods = {
     httpRequestHead,
     httpRequestBody,
     httpRequestFoot,
+    httpRequestAbort,
     websocketOpen,
     websocketPong,
     websocketSend,
