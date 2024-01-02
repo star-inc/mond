@@ -12,6 +12,22 @@ import {
     isObjectPropExists,
 } from "./utils.mjs";
 
+function useHeartbeat() {
+    const ttl = 8000;
+    let checkpoint = 0;
+    const refreshMethod = () => {
+        checkpoint = new Date().getTime();
+    }
+    const checkMethod = () => {
+        const now = new Date().getTime();
+        if (checkpoint + ttl < now) {
+            throw new Error("Heartbeat timeout");
+        }
+    };
+    const intervalId = setInterval(checkMethod, ttl);
+    return {refreshMethod, intervalId}
+}
+
 export function getBottleConfig() {
     const { entrypoint } = useConfig();
 
@@ -29,6 +45,7 @@ export default function connect() {
         }
     });
 
+    ws.heartbeat = useHeartbeat();
     ws.on('open', onOpen);
     ws.on('ping', onPing);
     ws.on('message', onMessage);
@@ -41,6 +58,8 @@ function onOpen() {
 }
 
 function onPing() {
+    const {refreshMethod} = this.heartbeat;
+    refreshMethod();
     this.pong();
 }
 
@@ -64,5 +83,7 @@ function onError(e) {
 
 function onClose() {
     console.warn("Session has been closed, try to reconnect later.");
+    const {intervalId} = this.heartbeat;
+    clearInterval(intervalId);
     setTimeout(connect, 7000);
 }
