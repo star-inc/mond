@@ -29,7 +29,8 @@ export const methods = {
 export function httpRequestHead(data) {
     const { requestId, url, method, headers } = data;
     if (!(requestId && url && method && headers)) {
-        throw new Error("Incorrect register information");
+        console.warn("Incorrect register information");
+        return;
     }
 
     const { node } = useConfig();
@@ -43,7 +44,7 @@ export function httpRequestHead(data) {
     if (!serverProfile) {
         sendMessage({
             requestId,
-            type: 'httpException',
+            type: 'httpResponseException',
             text: 'profile not exists'
         })
         return;
@@ -64,6 +65,7 @@ export function httpRequestHead(data) {
     const proxyHeaders = {
         ...headers,
         host: serverName,
+        "x-inaba-request-id": requestId,
     };
     const proxyOptions = {
         method: method,
@@ -119,7 +121,8 @@ export function httpRequestHead(data) {
 export function httpRequestBody(data) {
     const { requestId, chunk } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Request not exists");
+        console.warn(`Request \"${requestId}\" not exists`);
+        return;
     }
 
     const stream = agentPool.get(requestId);
@@ -129,7 +132,8 @@ export function httpRequestBody(data) {
 export function httpRequestFoot(data) {
     const { requestId } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Request not exists");
+        console.warn(`Request \"${requestId}\" not exists`);
+        return;
     }
 
     const stream = agentPool.get(requestId);
@@ -139,7 +143,8 @@ export function httpRequestFoot(data) {
 export function httpRequestAbort(data) {
     const { requestId } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Request not exists");
+        console.warn(`Request \"${requestId}\" not exists`);
+        return;
     }
 
     const stream = agentPool.get(requestId);
@@ -168,7 +173,7 @@ export function websocketOpen(data) {
     if (!serverProfile) {
         sendMessage({
             requestId,
-            type: 'httpException',
+            type: 'websocketException',
             text: 'profile not exists'
         })
         return;
@@ -218,7 +223,8 @@ export function websocketOpen(data) {
 export function websocketPong(data) {
     const { requestId, chunk } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Socket not exists");
+        console.warn(`Socket \"${requestId}\" not exists`);
+        return;
     }
 
     const ws = agentPool.get(requestId);
@@ -228,7 +234,8 @@ export function websocketPong(data) {
 export function websocketSend(data) {
     const { requestId, chunk, isBinary } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Socket not exists");
+        console.warn(`Socket \"${requestId}\" not exists`);
+        return;
     }
 
     const ws = agentPool.get(requestId);
@@ -239,7 +246,8 @@ export function websocketSend(data) {
 export function websocketClose(data) {
     const { requestId } = data;
     if (!agentPool.has(requestId)) {
-        throw new Error("Socket not exists");
+        console.warn(`Socket \"${requestId}\" not exists`);
+        return;
     }
 
     const ws = agentPool.get(requestId);
