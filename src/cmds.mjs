@@ -43,10 +43,14 @@ export function httpRequestHead(data) {
 
     if (!serverProfile) {
         sendMessage({
-            requestId,
             type: 'httpResponseException',
+            requestId,
             text: 'profile not exists'
-        })
+        });
+        sendMessage({
+            type: 'httpResponseFoot',
+            requestId,
+        });
         return;
     }
 
@@ -172,9 +176,13 @@ export function websocketOpen(data) {
 
     if (!serverProfile) {
         sendMessage({
-            requestId,
             type: 'websocketException',
+            requestId,
             text: 'profile not exists'
+        })
+        sendMessage({
+            type: 'websocketClose',
+            requestId,
         })
         return;
     }
