@@ -66,14 +66,12 @@ export function httpRequestHead(data) {
     urlParsed.host = realHost;
     urlParsed.port = realPort;
 
-    const proxyHeaders = {
-        ...headers,
-        host: serverName,
-        "x-inaba-request-id": requestId,
-    };
+    headers["host"] = serverName;
+    headers["x-inaba-request-id"] = requestId;
+
     const proxyOptions = {
-        method: method,
-        headers: proxyHeaders,
+        method,
+        headers,
         throwHttpErrors: false,
         https: {
             rejectUnauthorized: !isSecureUnsafe
